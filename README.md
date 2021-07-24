@@ -1,12 +1,11 @@
 # marketplace-bot
 
-A bot to help me find search for specific listings
+A bot to help me find search for specific listings. Just place the credentials in the Dockerfile and build!
 
 ### Requirements:
     Docker
 
 ### Getting Started:
-    1.Insert your Facebook email&pasword into the Dockerfile
     docker build -t fbapp:latest .
     docker run fbapp:latest
     
