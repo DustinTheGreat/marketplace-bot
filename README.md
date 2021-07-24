@@ -1,6 +1,6 @@
 # marketplace-bot
 
-A bot to help me find search for specific listings. Just place the credentials in the Dockerfile and build!
+A bot to help me search for specific listings. Just place the credentials in the Dockerfile and build!
 
 ### Requirements:
     Docker
