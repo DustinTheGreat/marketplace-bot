@@ -1,0 +1,4 @@
+login.txt
+mysql_test.py
+*venv*
+*.log
