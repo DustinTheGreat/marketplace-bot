@@ -7,9 +7,6 @@ import numpy as np
 # import matplotlib.pyplot as plt
 # from price_comparison_tool import get_login_creds
 from datetime import datetime, date, timedelta
-##Login to facebook and scrape marketplace
-# import MySQLdb
-# import mysql.connector
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -66,6 +63,23 @@ class Controller():
             print('Login unsuccessful:', str(e))
             self.driver.quit()
             exit()
+            
+    def open_rentals(self):
+        time.sleep(5)
+        try:
+            self.driver.get("https://www.facebook.com/marketplace/category/propertyrentals")
+            # marketplace_btn = self.driver.find_element_by_xpath('//span[contains(text(), "Property Rentals")]') #Checks the text of all spans for any instance of marketplace
+            # time.sleep(3)
+            # marketplace_btn.click()
+            # time.sleep(4)  
+            time.sleep(5)
+
+        except Exception as e:
+            print('Make sure user is loggedd in')
+            print('Unable to find rentals button:', str(e))
+            #self.driver.quit()
+            exit()        
+
 
     def open_mktplace(self):
         time.sleep(3)
@@ -97,7 +111,7 @@ class Controller():
 
         #Used to scroll down page in order to load more items, otherwise stale element error
         #To speed up the scrape, try doing while len(url_list) < 100 instead of just constantly running for loops
-        for i in range(500): 
+        for i in range(10): 
             try:
                 self.driver.execute_script("window.scrollTo(0,document.body.scrollHeight);")
                 time.sleep(1.3)
@@ -110,6 +124,7 @@ class Controller():
         #Loops through each item from the location list and returns the unique portion of the URL 
         for item in full_item_list:
             try:
+                print("item", item.get_attribute('href'))
                 if item.get_attribute('href').startswith('/marketplace/item', 24): #Page uses many href tags, this specifies only the item links
                     self.used_item_links.append(item.get_attribute('href'))
             except StaleElementReferenceException:
@@ -171,15 +186,16 @@ if __name__ == '__main__':
     start_time = time.monotonic()
     fb_app = Controller()
     fb_app.login()
-    fb_app.open_mktplace()
-    fb_app.search_item(item_name='smoker',location_name='Toronto')
-    used_item_links = fb_app.scrape_item_links()
+    # fb_app.open_mktplace()
+    fb_app.open_rentals()
+    # fb_app.search_item(item_name='1 bed',location_name='Elkhart')
+    # used_item_links = fb_app.scrape_item_links()
+    fb_app.scrape_item_links()
     print("\n")
     print("\n")
     print("####################################")
     print("\n")
     print("\n")
-    print("Thanks for using!)
     exit()
     # fb_app.scrape_item_info(used_item_links,category='smoker')
     # end_time = time.monotonic()

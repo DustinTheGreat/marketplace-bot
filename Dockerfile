@@ -52,6 +52,6 @@ RUN rm -Rf ~/.cache
 
 COPY . .
 
-RUN chmod 777 test.py
+RUN chmod 777 main.py
 
 CMD ["python", "main.py"]
