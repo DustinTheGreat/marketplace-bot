@@ -35,7 +35,9 @@ RUN apk update && \
 #     password=12345
 #########################
 #########################
+ENV USERNAME=email
 
+ENV PASSWORD=pass
 
 
 COPY requirements.txt .

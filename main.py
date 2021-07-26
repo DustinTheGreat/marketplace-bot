@@ -17,6 +17,9 @@ from selenium.webdriver.common.keys import Keys
 
 class Controller():
     def __init__(self):
+        self.all_listings = []
+        self.max_price = None
+        self.min_price = None
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--window-size=1420,1080')
@@ -29,7 +32,7 @@ class Controller():
         self.is_logged_it = False
         self.email = os.getenv('USERNAME', 'email')
         self.password = os.getenv('PASSWORD', 'pass')
-
+        self.rental_url = 'https://www.facebook.com/marketplace/category/propertyrentals'
         self.main_url = 'https://www.facebook.com/'
         self.used_item_links = [] #List for holding the links to each item in search screen
         try:
@@ -42,8 +45,10 @@ class Controller():
         # self.db = mysql.connector.connect(host='localhost',user=sql_user,passwd=sql_password, database='facebook_marketplace_items')
         time.sleep(5)
         print("All Ready to go")
-
-
+    def set_fb_filters(self):
+        if self.max_price !=None:
+            new = self.rental_url+"?maxPrice={}exact=false".format(self.max_price)
+            self.rental_url = new
     def login(self):
         try: 
             email_input = self.driver.find_element_by_id('email')
@@ -67,7 +72,7 @@ class Controller():
     def open_rentals(self):
         time.sleep(5)
         try:
-            self.driver.get("https://www.facebook.com/marketplace/category/propertyrentals")
+            self.driver.get("https://www.facebook.com/marketplace/category/propertyrentals?maxPrice=1300&exact=false")
             # marketplace_btn = self.driver.find_element_by_xpath('//span[contains(text(), "Property Rentals")]') #Checks the text of all spans for any instance of marketplace
             # time.sleep(3)
             # marketplace_btn.click()
@@ -132,54 +137,50 @@ class Controller():
             
         return self.used_item_links
 
-    def scrape_item_info(self,used_item_links,category):
+    def scrape_item_info(self):
 
         #This loops through every item URL and retrives the desired data for that item
         counter = 1
-        for url in used_item_links: 
+        for url in self.used_item_links: 
             self.driver.get(url)
             time.sleep(10)
 
             try:
-                price_raw = self.driver.find_element_by_xpath('//div[contains(@class, "dati1w0a qt6c0cv9 hv4rvrfc discj3wi")]/div[2]/div/span[1]').text #Locates the price element tag and extracts the text
-                price_raw1 = price_raw.replace(',','').replace('C','') #For reduced prices in canadian dollars, a C will prepend the second $, need to remove it to match int format 
-                
-                if '·' in price_raw1: #Some titles say · In Stock, need to remove for int format
-                    price_raw2, instock = price_raw1.split('·') 
-                else:
-                    price_raw2 = price_raw1
-
-                if price_raw2.count('$') == 2: #if the price is reduced, both prices will be scraped with two $ characters and the reduced value appearing first
-                    blank,price_str,orig_price = price_raw2.split('$') 
-                    price = int(price_str) #Price was passing as a string, db expects int for price
-                else:
-                    price_str = price_raw2.replace('$','')
-                    price = int(price_str)
-            except Exception:
-                print('\nPrice failed\n')
-                price = 0 #Don't use None, it causes issues since it's not an int
-
-            #The html xpath for title is used multiple times so always want to skip the first item scraped
-            title_html = []
-            title_html = self.driver.find_elements_by_xpath('//span[contains(@class,"iv3no6db o0t2es00 f530mmz5 hnhda86s")]')
-            title = title_html[1].text
+                # //*[@id="mount_0_0_U7"]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[2]/div/div/div/div/div/div[2]/div/div[2]/div/div[1]/div[1]/div[1]/div[1]/div/span
+                price_raw = self.driver.find_element_by_xpath('/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[2]/div/div/div/div/div/div[2]/div/div[2]/div/div[1]/div[1]/div[1]/div[1]/div/span').text #Locates the price element tag and extracts the text
+                print(price_raw)
+            except:
+                pass
+            # #The html xpath for title is used multiple times so always want to skip the first item scraped
+            # title_html = []
 
             try:
-                description = self.driver.find_element_by_xpath('//div[contains(@class,"ii04i59q ")]/div/span').text
+                description = self.driver.find_element_by_xpath('/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div[2]/div/div/div/div/div/div[2]/div/div[2]/div/div[1]/div[1]/div[8]/div[2]/div/div/div/span').text
             except:
                 description = ""
-            
-            urlId = url.split('/item/')[1]
+            print(description)
+            exit()
+            # urlId = url.split('/item/')[1]
             scraped_date = date.today() #Using a datetime object that does not include time            
-
-            insertValues = (urlId, title, price, description, scraped_date, scraped_date, category)
-
-
-        print("used_item_links", used_item_links, len(used_item_links))
+            # self.all_listings.append(title)
+            # insertValues = (urlId, title, price, description, scraped_date, scraped_date, category)
 
 
-        self.driver.quit()
+        # print("used_item_links", used_item_links, len(used_item_links))
 
+
+
+    def today_rental_links(self):
+        print("Todays Rentals Links")
+        print("----------------------------------")
+        for x in range(len(self.used_item_links)):
+            print(x, "   ", self.used_item_links[x])
+
+    def today_rental_title(self):
+        print("Todays Rentals Title")
+        print("----------------------------------")
+        for x in range(len(self.all_listings)):
+            print(x, "   ", self.all_listings[x])
 
 
 if __name__ == '__main__':
@@ -196,6 +197,9 @@ if __name__ == '__main__':
     print("####################################")
     print("\n")
     print("\n")
+    fb_app.today_rental_links()
+    fb_app.scrape_item_info()
+    fb_app.today_rental_title()
     exit()
     # fb_app.scrape_item_info(used_item_links,category='smoker')
     # end_time = time.monotonic()
